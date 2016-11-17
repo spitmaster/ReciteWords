@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.os.Build;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 
@@ -37,18 +38,24 @@ public class EVWords extends AppCompatEditText implements TextWatcher {
         setFocusable(true);
         setFocusableInTouchMode(true);
         setSingleLine();
-
         setBackgroundResource(R.drawable.under_line);
     }
 
     protected String mKeyWords;
+    protected String mKeyWordsTrans;
 
     public String getKeyWords() {
         return mKeyWords;
     }
 
     public void setKeyWords(String keyWords) {
+        setKeyWords(keyWords, null);
+    }
+
+    public void setKeyWords(String keyWords, String keywordsTrans) {
         this.mKeyWords = keyWords;
+        if (keywordsTrans == null) mKeyWordsTrans = keyWords;
+        else this.mKeyWordsTrans = keywordsTrans;
         setText("");
     }
 
@@ -69,10 +76,18 @@ public class EVWords extends AppCompatEditText implements TextWatcher {
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
     }
 
+    private OnTextChangedListener listener;
 
     @Override
     public void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
+        if (listener != null) {
+            listener.onTextChanged(text, start, lengthBefore, lengthAfter);
+        }
+    }
+
+    public void setOnTextChangedListener(OnTextChangedListener listener) {
+        this.listener = listener;
     }
 
     @Override
@@ -81,10 +96,17 @@ public class EVWords extends AppCompatEditText implements TextWatcher {
             return;
         }
         String inputString = s.toString();
-        if (mKeyWords.startsWith(inputString)) {
+        if (mKeyWords.startsWith(inputString) || mKeyWordsTrans.startsWith(inputString)) {
             setTextColor(getResources().getColor(R.color.bingoColor));
         } else {
             setTextColor(getResources().getColor(R.color.wrongColor));
         }
     }
+
+
+    //把文字改变监听向外传递
+    public interface OnTextChangedListener {
+        void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter);
+    }
+
 }
